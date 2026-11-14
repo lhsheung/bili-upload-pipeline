@@ -1497,6 +1497,8 @@
 /* 封面来源卡片 */
 #bili-batch-panel #bili-batch-stats + div{background:var(--bb-fill) !important;border:none !important;border-radius:11px !important;padding:10px !important}
 #bili-batch-panel #bili-batch-stats + div > div:first-child{color:var(--bb-ink2) !important;font-size:10.5px !important;letter-spacing:.06em}
+#bili-batch-panel #bili-batch-stats + div > div:nth-child(2){font-size:11.5px !important;gap:4px 9px !important}
+#bili-batch-panel #bili-batch-stats + div label{white-space:nowrap}
 #bili-batch-panel label{color:var(--bb-ink2) !important}
 #bili-batch-panel label[style*="color:#ff4d4f"]{color:var(--bb-danger) !important}
 #bili-batch-panel input[type="checkbox"],#bili-batch-panel input[type="radio"]{accent-color:var(--bb-accent)}
@@ -1536,11 +1538,60 @@
 #bili-batch-panel #bili-batch-progress-bar{background:var(--bb-accent) !important;transition:width .25s ease}
 #bili-batch-panel #bili-batch-progress-text{color:var(--bb-ink2) !important}
 #bili-batch-panel #bili-batch-log{background:rgba(0,0,0,.035) !important;border-radius:9px !important;color:var(--bb-ink2) !important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace !important}
+/* 匹配明细默认收起：常见路径优先，要看再点开（Simplicity / Wayfinding） */
+#bili-batch-panel #bb-match-fold{border-top:.5px solid var(--bb-line);padding:0 !important;font-size:11.5px !important;border-radius:0 !important}
+#bili-batch-panel #bb-match-fold > summary{cursor:pointer;list-style:none;color:var(--bb-ink2);font-size:11.5px;padding:7px 0;outline:none;transition:opacity .12s}
+#bili-batch-panel #bb-match-fold > summary:active{opacity:.55}
+#bili-batch-panel #bb-match-fold > summary::-webkit-details-marker{display:none}
+#bili-batch-panel #bb-match-fold > summary::before{content:'›';display:inline-block;margin-right:6px;font-size:14px;transition:transform .18s}
+#bili-batch-panel #bb-match-fold[open] > summary::before{transform:rotate(90deg)}
+#bili-batch-panel #bb-match-fold .bb-fold-body{padding-bottom:8px}
+#bili-batch-panel #bb-match-fold #bb-summary{margin-bottom:6px}
+#bili-batch-panel .bb-hidden{display:none !important}
 @media (prefers-reduced-transparency:reduce){#bili-batch-panel{background:#fff !important;backdrop-filter:none;-webkit-backdrop-filter:none}}
 @media (prefers-reduced-motion:reduce){#bili-batch-panel button,#bili-batch-panel summary::before{transition:none !important}#bili-batch-panel button:active{transform:none !important}}
 `;
     document.head.appendChild(st);
   }
+
+  /* BB_TIDY_START */
+  /**
+   * 【布局整理】不删控件、不改按钮文案，只做两件事：
+   * 1) 状态摘要 + 逐条匹配明细装进默认收起的折叠区，需要核对时点开即可
+   * 2) 隐藏纯说明性文字；按钮、勾选框、输入框、选项标签一个都不动
+   */
+  function tidyLayout(panel) {
+    const match = panel.querySelector('#bili-batch-match');
+    const summary = panel.querySelector('#bb-summary');
+    if (match && !panel.querySelector('#bb-match-fold')) {
+      const det = document.createElement('details');
+      det.id = 'bb-match-fold';
+      const sum = document.createElement('summary');
+      sum.textContent = '匹配明细';
+      det.appendChild(sum);
+      const body = document.createElement('div');
+      body.className = 'bb-fold-body';
+      det.appendChild(body);
+      match.parentNode.insertBefore(det, match);
+      if (summary) body.appendChild(summary);
+      body.appendChild(match);
+    }
+    // 这四处是纯说明文字，不是控件；用 class 隐藏而非删除，随时可恢复
+    [
+      'details > div[style*="flex-wrap:wrap"] > span',
+      'div[style*="border-top:2px dashed #ff4d4f"]',
+      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(2)',
+      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(3)'
+    ].forEach((sel) => panel.querySelectorAll(sel).forEach((el) => el.classList.add('bb-hidden')));
+    // 去掉可见范围那行里的一句解释性括注（只改文本节点，不碰 radio）
+    const w = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
+    const texts = [];
+    while (w.nextNode()) {
+      if (w.currentNode.nodeValue.indexOf('（页面真实只有这两项）') >= 0) texts.push(w.currentNode);
+    }
+    texts.forEach((n) => { n.nodeValue = n.nodeValue.replace('（页面真实只有这两项）', ''); });
+  }
+  /* BB_TIDY_END */
 
   function createPanel() {
     const existing = document.getElementById('bili-batch-panel');
@@ -1661,6 +1712,7 @@
         </details>
       </div>`;
     document.body.appendChild(panel);
+    tidyLayout(panel);
     makeDraggable(panel);
     requestAnimationFrame(() => bindEvents(panel));
   }
