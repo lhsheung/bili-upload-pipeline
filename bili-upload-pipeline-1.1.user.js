@@ -2,7 +2,7 @@
 // @name         哔哩哔哩投稿流水线 1.1
 // @namespace    https://github.com/lhsheung/bili-upload-pipeline
 // @version      1.1
-// @description  提速版：封面只按原视频文件名匹配本地图片；不再等系统推荐帧、不再回退单图；全流程条件轮询；失败项自动重试一轮
+// @description  PS5 游戏视频备份用：封面按原视频文件名精确匹配、批量设「仅自己可见」、失败项自动重试；不猜相似度、不等系统推荐帧
 // @author       LauHingSheung
 // @match        https://member.bilibili.com/platform/upload/video/*
 // @grant        none
