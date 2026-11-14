@@ -1576,20 +1576,37 @@
       if (summary) body.appendChild(summary);
       body.appendChild(match);
     }
-    // 这四处是纯说明文字，不是控件；用 class 隐藏而非删除，随时可恢复
+    // 纯说明文字（不是控件）一律收掉；用 class 隐藏而非删除，随时可恢复
     [
-      'details > div[style*="flex-wrap:wrap"] > span',
-      'div[style*="border-top:2px dashed #ff4d4f"]',
-      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(2)',
-      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(3)'
+      '#bili-batch-stats + div > div:first-child',             // 「封面来源」小标题
+      '#bb-summary',                                           // 与勾选项重复的 6 行状态说明
+      'details > div[style*="flex-wrap:wrap"] > span',          // 「勾 = 执行…」
+      'div[style*="border-top:2px dashed #ff4d4f"]',            // 「— 以下为独立功能 —」
+      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(2)', // 分区说明行
+      'details > div[style*="border-top:1px dashed #eee"] > div:nth-child(3)'  // 标签说明行
     ].forEach((sel) => panel.querySelectorAll(sel).forEach((el) => el.classList.add('bb-hidden')));
-    // 去掉可见范围那行里的一句解释性括注（只改文本节点，不碰 radio）
+
+    // 折叠标题里的冗余措辞
+    panel.querySelectorAll('summary').forEach((s) => {
+      if (s.textContent.indexOf('一键包含的项目') >= 0) s.textContent = '详细设置';
+    });
+    // 「系统推荐帧：用第 [1] 张」→「推荐帧 [1]」；select 本身保留
+    const frame = panel.querySelector('#bb-frame');
+    if (frame && frame.parentNode) {
+      [...frame.parentNode.childNodes].forEach((n) => {
+        if (n.nodeType === 3) n.nodeValue = n.nodeValue.replace('系统推荐帧：用第', '推荐帧 ').replace('张', '');
+      });
+    }
+    // 解释性括注（只改文本节点，不碰 radio / checkbox / 按钮）
+    const drop = ['（页面真实只有这两项）', '（最多2分钟）', '（点开）'];
     const w = document.createTreeWalker(panel, NodeFilter.SHOW_TEXT);
     const texts = [];
-    while (w.nextNode()) {
-      if (w.currentNode.nodeValue.indexOf('（页面真实只有这两项）') >= 0) texts.push(w.currentNode);
-    }
-    texts.forEach((n) => { n.nodeValue = n.nodeValue.replace('（页面真实只有这两项）', ''); });
+    while (w.nextNode()) texts.push(w.currentNode);
+    texts.forEach((n) => {
+      let v = n.nodeValue;
+      drop.forEach((d) => { v = v.split(d).join(''); });
+      if (v !== n.nodeValue) n.nodeValue = v;
+    });
   }
   /* BB_TIDY_END */
 
