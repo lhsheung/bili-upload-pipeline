@@ -1,0 +1,8 @@
+node_modules/
+*.zip
+*.bak.user.js
+chrome-prof/
+edge-prof/
+*.log
+.DS_Store
+Thumbs.db
