@@ -1466,9 +1466,86 @@
   // UI
   // ===========================
 
+  /**
+   * 【Apple 风格配色层】只注入 CSS 覆盖视觉，绝不改动面板 DOM：
+   * 原版每一个按钮的名称、位置、数量、id、data-action 与事件绑定都原样保留。
+   * 之前那版把控件塞进折叠、改名、删掉 4 个控件，是错误做法，已废弃。
+   */
+  function applyAppleSkin() {
+    if (document.getElementById('bb-skin')) return;
+    const st = document.createElement('style');
+    st.id = 'bb-skin';
+    st.textContent = `
+#bili-batch-panel{
+  --bb-accent:#0071e3; --bb-ink:#1d1d1f; --bb-ink2:#6e6e73; --bb-danger:#ff3b30;
+  --bb-line:rgba(60,60,67,.13); --bb-fill:rgba(120,120,128,.09);
+  background:rgba(250,250,252,.88) !important;
+  -webkit-backdrop-filter:saturate(180%) blur(24px); backdrop-filter:saturate(180%) blur(24px);
+  border:.5px solid rgba(0,0,0,.10) !important; border-radius:16px !important;
+  box-shadow:0 14px 44px rgba(0,0,0,.17) !important;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang SC","Helvetica Neue",Arial,sans-serif !important;
+  color:var(--bb-ink) !important; font-size:13px !important; letter-spacing:0;
+}
+#bili-batch-panel *{box-sizing:border-box}
+/* 顶栏：由蓝底白字改为透明玻璃 + 深色字 */
+#bili-batch-panel #bili-batch-header{background:transparent !important;color:var(--bb-ink) !important;border-bottom:.5px solid var(--bb-line);padding:11px 14px !important}
+#bili-batch-panel #bili-batch-header span{font-size:13px !important;font-weight:600;letter-spacing:-.01em}
+#bili-batch-panel #bili-batch-header button{width:26px;height:26px;border-radius:50%;background:var(--bb-fill) !important;border:none !important;color:var(--bb-ink2) !important;font-size:13px !important;line-height:1;cursor:pointer;transition:background .12s}
+#bili-batch-panel #bili-batch-header button:active{background:rgba(120,120,128,.22) !important}
+#bili-batch-panel #bili-batch-body{padding:12px 14px 14px !important}
+#bili-batch-panel #bili-batch-stats{font-size:11.5px !important;color:var(--bb-ink2) !important}
+/* 封面来源卡片 */
+#bili-batch-panel #bili-batch-stats + div{background:var(--bb-fill) !important;border:none !important;border-radius:11px !important;padding:10px !important}
+#bili-batch-panel #bili-batch-stats + div > div:first-child{color:var(--bb-ink2) !important;font-size:10.5px !important;letter-spacing:.06em}
+#bili-batch-panel label{color:var(--bb-ink2) !important}
+#bili-batch-panel label[style*="color:#ff4d4f"]{color:var(--bb-danger) !important}
+#bili-batch-panel input[type="checkbox"],#bili-batch-panel input[type="radio"]{accent-color:var(--bb-accent)}
+#bili-batch-panel select,#bili-batch-panel input[type="text"]{
+  border:.5px solid var(--bb-line) !important;border-radius:7px !important;
+  background:rgba(255,255,255,.85) !important;color:var(--bb-ink) !important;
+  padding:3px 6px !important;font-family:inherit;outline:none;
+}
+#bili-batch-panel select:focus,#bili-batch-panel input[type="text"]:focus{border-color:var(--bb-accent) !important}
+/* 功能按钮：全部保留，只统一成中性底；按功能分主次，不再用彩虹色 */
+#bili-batch-panel button.bili-act,#bili-batch-panel button.bili-op{
+  background:rgba(255,255,255,.82) !important;color:var(--bb-ink) !important;
+  border:.5px solid var(--bb-line) !important;border-radius:9px !important;
+  font-family:inherit !important;font-weight:500 !important;cursor:pointer;
+  transition:transform .1s cubic-bezier(.2,.9,.25,1),background .12s;
+}
+#bili-batch-panel button.bili-act:active,#bili-batch-panel button.bili-op:active{transform:scale(.975);background:rgba(0,0,0,.05) !important}
+/* 主操作 = 实心蓝，次主 = 浅蓝，危险 = 浅红 */
+#bili-batch-panel button[data-action="setAll"]{background:var(--bb-accent) !important;color:#fff !important;border:none !important;font-weight:600 !important;border-radius:11px !important}
+#bili-batch-panel button[data-action="allThenSubmit"]{background:rgba(0,113,227,.12) !important;color:var(--bb-accent) !important;border:none !important;font-weight:600 !important;border-radius:11px !important}
+#bili-batch-panel button[data-action="batchSubmit"]{background:rgba(255,59,48,.10) !important;color:var(--bb-danger) !important;border:none !important}
+#bili-batch-panel button[data-action="clearCover"],#bili-batch-panel button[data-action="abort"]{background:none !important;color:var(--bb-danger) !important;border:none !important}
+/* 折叠区 */
+#bili-batch-panel details{border:none !important;border-top:.5px solid var(--bb-line) !important;border-radius:0 !important;padding:2px 0 !important;font-size:11.5px !important}
+#bili-batch-panel summary{cursor:pointer;list-style:none;color:var(--bb-ink2) !important;font-weight:500 !important;outline:none;padding:7px 0 !important}
+#bili-batch-panel summary::-webkit-details-marker{display:none}
+#bili-batch-panel summary::before{content:'›';display:inline-block;margin-right:6px;transition:transform .18s;font-size:14px}
+#bili-batch-panel details[open] summary::before{transform:rotate(90deg)}
+#bili-batch-panel details > div{color:var(--bb-ink2) !important}
+#bili-batch-panel details span,#bili-batch-panel details b{color:inherit}
+#bili-batch-panel div[style*="border-top:2px dashed #ff4d4f"]{border-top:.5px solid var(--bb-line) !important;color:var(--bb-ink2) !important;margin:6px 0 2px !important;padding-top:8px !important}
+/* 摘要 / 匹配表 / 进度 / 日志 */
+#bili-batch-panel #bb-summary{background:var(--bb-fill) !important;border:none !important;border-radius:9px !important;color:var(--bb-ink2) !important;padding:8px 10px !important}
+#bili-batch-panel #bili-batch-match{border-top:none !important;max-height:158px !important}
+#bili-batch-panel #bili-batch-match > div{border-bottom:.5px solid var(--bb-line) !important}
+#bili-batch-panel #bili-batch-progress > div:nth-child(2){background:rgba(120,120,128,.18) !important;border-radius:99px !important;height:4px !important;overflow:hidden}
+#bili-batch-panel #bili-batch-progress-bar{background:var(--bb-accent) !important;transition:width .25s ease}
+#bili-batch-panel #bili-batch-progress-text{color:var(--bb-ink2) !important}
+#bili-batch-panel #bili-batch-log{background:rgba(0,0,0,.035) !important;border-radius:9px !important;color:var(--bb-ink2) !important;font-family:ui-monospace,SFMono-Regular,Menlo,monospace !important}
+@media (prefers-reduced-transparency:reduce){#bili-batch-panel{background:#fff !important;backdrop-filter:none;-webkit-backdrop-filter:none}}
+@media (prefers-reduced-motion:reduce){#bili-batch-panel button,#bili-batch-panel summary::before{transition:none !important}#bili-batch-panel button:active{transform:none !important}}
+`;
+    document.head.appendChild(st);
+  }
+
   function createPanel() {
     const existing = document.getElementById('bili-batch-panel');
     if (existing) existing.remove();
+    applyAppleSkin();
 
     const panel = document.createElement('div');
     panel.id = 'bili-batch-panel';
