@@ -1,6 +1,6 @@
 # 哔哩哔哩投稿流水线
 
-> 作者：[@lhsheung](https://github.com/lhsheung)（LauHingSheung）　当前版本 **3.4**
+> 作者：[@lhsheung](https://github.com/lhsheung)（LauHingSheung）　当前版本 **3.5**
 
 把 B 站投稿页变成一条批量入库流水线：**按原视频文件名自动配封面**、批量设「仅自己可见」与创作声明、自动读取 U 盘里的 PS5 录像并按队列上传、失败项自动重试。
 
@@ -45,10 +45,10 @@ PS5 的录像和截图是同一套命名：`游戏名_日期时间`，两者只�
 1. Edge 安装 [Tampermonkey](https://microsoftedge.microsoft.com/addons/detail/tampermonkey/iikmkjmpaadaobahmlepeloendndfphd)（或 Violentmonkey）
 2. **推荐**：直接打开 raw 链接，Tampermonkey 会弹出安装页
      
-   -或者：扩展管理页 → 新建脚本 → 粘贴 `bili-upload-pipeline-3.4.user.js` 全部内容 → 保存
+   -或者：扩展管理页 → 新建脚本 → 粘贴 `bili-upload-pipeline-3.5.user.js` 全部内容 → 保存
 3. 打开 `https://member.bilibili.com/platform/upload/video/`，右下角出现面板即生效
 
-> **从 3.x / 2.x 升级**：旧版本请删除后再导入 3.4（3.0 的封面上传有崩溃 bug，必须升）（脚本内没有 `@updateURL`，不会自动更新）。注意 2.1 不再靠页面下拉抓合集，改走账号接口，无投稿任务时也能读到。
+> **从 3.x / 2.x 升级**：旧版本请删除后再导入 3.5（3.0 的封面上传有崩溃 bug，必须升）（脚本内没有 `@updateURL`，不会自动更新）。注意 2.1 不再靠页面下拉抓合集，改走账号接口，无投稿任务时也能读到。
 >   
 > 同一浏览器里只保留一份本脚本。旧版本（如「B站批量投稿设置助手」）请先删除或禁用，否则两套脚本会在同一页面重复操作。
 
@@ -113,6 +113,7 @@ const CONFIG = {
 
 ## 版本
 
+- **3.5** 检查更新改为直接给 raw 安装链接（点了篡改猴直接弹安装页），release 页降级为兜底次链接
 - **3.4** 面板顺序：PS 模式 → 操作日志 → 关于/检查更新 → 预设；修复目录授权被拒绝时无反馈（现在会明确提示点「选择目录」重选）；路径栏待授权时橙色可点
 - **3.2** 界面重排：PS 模式提到最前、操作日志与「关于/检查更新」紧贴其下；新增检查更新（GitHub API 优先，403 自动回落 README）；发布流程加版本一致性校验
 - **3.1** 修复 3.0 封面上传崩溃（双比例同步段引用未定义 dlg）；提前授权跳过确认框；记忆上次目录；每次打开自动扫描刷新库存；通知条纵向堆叠不遮挡；面板「独立模式」改「PS 模式」
